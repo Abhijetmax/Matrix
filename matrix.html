@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Matrix Boot</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+      font-family: monospace;
+      color: #00ffcc;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .bootlog {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      font-size: 1.3rem;
+      white-space: pre-wrap;
+      text-shadow: 0 0 10px #0ff;
+      max-width: 90%;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .continue {
+      position: absolute;
+      bottom: 5%;
+      width: 100%;
+      text-align: center;
+      font-size: 1.2rem;
+      color: #00ffcc;
+      text-shadow: 0 0 10px #0ff;
+      opacity: 0;
+      animation: blink 1.2s infinite;
+      z-index: 2;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 1.2rem;
+      background: #00ffcc;
+      animation: blink 1s steps(1) infinite;
+      margin-left: 5px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0 }
+      50% { opacity: 1 }
+    }
+
+    .glitch {
+      display: inline-block;
+      animation: glitch 0.3s infinite;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-1px, 1px); }
+      40% { transform: translate(1px, -1px); }
+      60% { transform: translate(-1px, -1px); }
+      80% { transform: translate(1px, 1px); }
+      100% { transform: translate(0); }
+    }
+
+    audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="bootlog" id="bootlog">
+
+    ██╗    ██╗███████╗██╗     ███████╗ ██████╗ ███╗   ███╗███████╗
+    ██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██╔════╝
+    ██║ █╗ ██║█████╗  ██║     █████╗  ██║   ██║██╔████╔██║█████╗  
+    ██║███╗██║██╔══╝  ██║     ██╔══╝  ██║   ██║██║╚██╔╝██║██╔══╝  
+    ╚███╔███╔╝███████╗███████╗███████╗╚██████╔╝██║ ╚═╝ ██║███████╗
+     ╚══╝╚══╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝
+
+</pre>
+  </div>
+  <div class="continue" id="continue">Press Enter to continue<span class="cursor"></span></div>
+
+  <!-- Background music -->
+  <audio autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_a5e8b81cb1.mp3?filename=digital-reflection-110243.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Typing sound -->
+  <audio id="typeSound" src="https://cdn.pixabay.com/download/audio/2022/03/16/audio_ecd45bfb4b.mp3?filename=typing-6-100690.mp3"></audio>
+
+  <script>
+    // Matrix Rain
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const fontSize = 16;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+    const chars = 'OVRO SYSTEM ACCESS GRANTED 01#$%^&*()'.split('');
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#00ffcc';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const char = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        ctx.fillText(char, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+
+      requestAnimationFrame(drawMatrix);
+    }
+
+    drawMatrix();
+
+    // Boot Sequence Typing
+    const lines = [
+      'Initializing system memory...',
+      'Scanning BIOS... OK',
+      'Loading kernel modules... OK',
+      'Authenticating user: Unknown',
+      'Access token verified.',
+      'Decrypting core memory... COMPLETE',
+      'Establishing neural interface... DONE',
+      'Synchronizing with Matrix node [Cottbus]... SUCCESS',
+      'Loading user profile...',
+      'Welcome, <span class="glitch">Stranger</span>.',
+      'System unlocked. All protocols are green!!!'
+    ];
+
+    const logEl = document.getElementById('bootlog');
+    const continueEl = document.getElementById('continue');
+    const typeSound = document.getElementById('typeSound');
+
+    let index = 0;
+
+    function typeLine() {
+      if (index < lines.length) {
+        const line = lines[index];
+        typeSound.currentTime = 0;
+        typeSound.play();
+        logEl.innerHTML += line + '\n';
+        index++;
+        setTimeout(typeLine, 900);
+      } else {
+        continueEl.style.opacity = 1;
+      }
+    }
+
+    setTimeout(typeLine, 1000);
+
+    // Enter to clear screen
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && index === lines.length) {
+        document.body.style.transition = 'opacity 1s';
+        document.body.style.opacity = 0;
+
+        // Optional redirect after fade:
+        setTimeout(() => window.location.href = 'https://github.com/Abhijetmax', 1000);
+      }
+    });
+  </script>
+</body>
+</html>
